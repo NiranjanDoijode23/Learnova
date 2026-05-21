@@ -23,7 +23,7 @@ jest.mock("@/lib/mongodb", () => ({
   connectDb: jest.fn(),
 }));
 
-describe("POST /api/register - Email Validation Security Tests", () => {
+describe("POST /api/register - Security & Validation Tests", () => {
   let mockFindOne;
   let mockInsertOne;
 
@@ -43,10 +43,25 @@ describe("POST /api/register - Email Validation Security Tests", () => {
     put.mockResolvedValue({ url: "https://example.com/blob.jpg" });
   });
 
-  const mockFile = {
-    arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-    type: "image/jpeg",
+  const createMockFile = (mimeType, size, magicBytes = []) => {
+    const buffer = new Uint8Array(magicBytes.concat(new Array(Math.max(0, 12 - magicBytes.length)).fill(0))).buffer;
+    const BaseClass = typeof File !== "undefined" ? File : class {};
+    const mockFileObj = Object.create(BaseClass.prototype);
+    Object.defineProperty(mockFileObj, "type", { value: mimeType, writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(mockFileObj, "size", { value: size, writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(mockFileObj, "arrayBuffer", { value: jest.fn().mockResolvedValue(buffer), writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(mockFileObj, "slice", {
+      value: jest.fn().mockReturnValue({
+        arrayBuffer: jest.fn().mockResolvedValue(buffer),
+      }),
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
+    return mockFileObj;
   };
+
+  const mockFile = createMockFile("image/jpeg", 1024, [0xff, 0xd8, 0xff]);
 
   const createMockRequest = (data) => {
     return {
