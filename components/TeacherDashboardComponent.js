@@ -102,7 +102,8 @@ const TeacherDashboard = () => {
         const totalStudents = records.length;
         const averageAttendance =
           totalStudents > 0
-            ? Math.round(((presentToday + lateToday) / totalStudents) * 1000) / 10
+            ? Math.round(((presentToday + lateToday) / totalStudents) * 1000) /
+              10
             : 0;
 
         setAttendanceStats({
@@ -426,7 +427,7 @@ const TeacherDashboard = () => {
       setLoading(false);
     }, 1500);
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       const now = new Date();
       setCurrentTime(now);
 
